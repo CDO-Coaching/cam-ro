@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>Posture Analyser</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header>
+      <h1>Posture Analyser</h1>
+      <div id="movement-selector">
+        <button class="mv-btn active" data-movement="squat">Squat</button>
+        <button class="mv-btn" data-movement="pushup">Pompe</button>
+      </div>
+    </header>
+
+    <!-- Camera / canvas -->
+    <div id="video-wrapper">
+      <video id="video" playsinline autoplay muted></video>
+      <canvas id="canvas"></canvas>
+
+      <!-- Overlays -->
+      <div id="feedback-overlay">
+        <div id="feedback-badge"></div>
+      </div>
+
+      <div id="camera-hint">Placez-vous de <strong>profil</strong> à ~2 m de la caméra</div>
+    </div>
+
+    <!-- Stats bar -->
+    <div id="stats">
+      <div class="stat-box">
+        <span class="stat-value" id="rep-count">0</span>
+        <span class="stat-label">Reps</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-value" id="knee-angle">—</span>
+        <span class="stat-label">Angle genou</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-value" id="phase-label">—</span>
+        <span class="stat-label">Phase</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-value" id="rep-speed">—</span>
+        <span class="stat-label">Vitesse</span>
+      </div>
+    </div>
+
+    <!-- Issues list -->
+    <div id="issues-panel">
+      <h3>Corrections</h3>
+      <ul id="issues-list"><li class="placeholder">Démarrez pour voir les corrections.</li></ul>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls">
+      <button id="start-btn">Démarrer la caméra</button>
+      <button id="reset-btn" disabled>Réinitialiser</button>
+    </div>
+  </div>
+
+  <!-- MediaPipe CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+
+  <script src="app.js"></script>
+</body>
+</html>
