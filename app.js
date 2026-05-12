@@ -37,6 +37,7 @@ const st = {
   phase: 'up',
   phaseStart: null,
   lastDuration: null,
+  depthReached: false,  // true si la profondeur requise a été atteinte pendant la descente
 };
 
 // ─── Navigation ──────────────────────────────────────────────────────────────
@@ -108,15 +109,16 @@ function onResults(results) {
     ? mv.hint
     : '⚠ Corps non entier visible — reculez ou recadrez';
 
-  const { primaryAngle, issues } = mv.analyse(lm, st.phase);
+  const { primaryAngle, issues, depthOk } = mv.analyse(lm, st.phase);
 
-  // Ne compte les reps que si le corps est entier dans le cadre
+  // Accumule la profondeur atteinte pendant la phase basse
+  if (st.phase === 'down' && depthOk) st.depthReached = true;
+
   if (!mv.isIsometric) {
     if (bodyOk) {
       updatePhase(primaryAngle, mv.downAngle, mv.upAngle, issues);
     } else {
-      // Affiche quand même la phase mais sans valider
-      if (primaryAngle < mv.downAngle) statPhase.textContent = '▼ Bas (non compté)';
+      if (primaryAngle < mv.downAngle) statPhase.textContent = '▼ Bas (hors cadre)';
     }
   }
 
@@ -134,18 +136,28 @@ function updatePhase(angle, downThr, upThr, issues) {
   if (angle < downThr && st.phase !== 'down') {
     st.phase = 'down';
     st.phaseStart = performance.now();
+    st.depthReached = false;
     statPhase.textContent = '▼ Bas';
   } else if (angle > upThr && st.phase === 'down') {
-    st.reps++;
-    statReps.textContent = st.reps;
-    if (st.phaseStart) {
-      st.lastDuration = ((performance.now() - st.phaseStart) / 1000).toFixed(1);
-      statSpeed.textContent = st.lastDuration + 's';
-    }
     st.phase = 'up';
+
+    if (st.depthReached) {
+      // Rep valide : profondeur atteinte pendant la descente
+      st.reps++;
+      statReps.textContent = st.reps;
+      if (st.phaseStart) {
+        st.lastDuration = ((performance.now() - st.phaseStart) / 1000).toFixed(1);
+        statSpeed.textContent = st.lastDuration + 's';
+      }
+      const hasError = issues.some(i => i.level === 'error');
+      flashFeedback(hasError ? 'bad' : 'good', hasError ? `⚠ ${issues.filter(i=>i.level==='error').length} erreur(s)` : '✓ Bonne rep !');
+    } else {
+      // Demi-squat : non compté
+      flashFeedback('bad', '✗ Demi-squat — non compté');
+    }
+
     statPhase.textContent = '▲ Haut';
-    const hasError = issues.some(i => i.level === 'error');
-    flashFeedback(hasError ? 'bad' : 'good', hasError ? `⚠ ${issues.filter(i=>i.level==='error').length} erreur(s)` : '✓ Bonne rep !');
+    st.depthReached = false;
   }
 }
 
@@ -249,7 +261,7 @@ function stopCamera() {
 resetBtn.addEventListener('click', resetStats);
 
 function resetStats() {
-  Object.assign(st, { reps: 0, phase: 'up', phaseStart: null, lastDuration: null });
+  Object.assign(st, { reps: 0, phase: 'up', phaseStart: null, lastDuration: null, depthReached: false });
   statReps.textContent   = '0';
   statAngle.textContent  = '—';
   statPhase.textContent  = '—';

@@ -83,17 +83,18 @@ const SQUAT = {
       if (kneeForward) issues.push(err('Genou dépasse les orteils — reculez les fesses, poussez les genoux vers l\'extérieur'));
       else issues.push(ok('Genou dans l\'axe des orteils ✓'));
 
-      // Depth: hip crease must be clearly below knee (margin = 0.06 normalized units)
+      // Depth: hip crease must be clearly below knee
       const DEPTH_MARGIN = 0.06;
-      if (hip.y < knee.y + DEPTH_MARGIN) issues.push(warn('Pas assez profond — hanches bien sous les genoux (squat complet)'));
+      const depthOk = hip.y >= knee.y + DEPTH_MARGIN;
+      if (!depthOk) issues.push(warn('Pas assez profond — hanches bien sous les genoux (squat complet)'));
       else issues.push(ok('Profondeur complète ✓'));
 
-      // Knee valgus: rough check via knee vs ankle x-alignment on front view
-      // (limited without front camera — noted as tip)
       if (torsoAng < 30 && kneeAng < 90) issues.push(info('Conseil : vérifiez que vos genoux s\'ouvrent bien vers l\'extérieur'));
+
+      return { primaryAngle: kneeAng, issues, depthOk };
     }
 
-    return { primaryAngle: kneeAng, issues };
+    return { primaryAngle: kneeAng, issues, depthOk: false };
   }
 };
 
