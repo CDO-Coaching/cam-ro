@@ -84,7 +84,7 @@ const SQUAT = {
       else issues.push(ok('Genou dans l\'axe des orteils ✓'));
 
       // Depth: hip crease must be clearly below knee
-      const DEPTH_MARGIN = 0.06;
+      const DEPTH_MARGIN = 0.02;
       const depthOk = hip.y >= knee.y + DEPTH_MARGIN;
       if (!depthOk) issues.push(warn('Pas assez profond — hanches bien sous les genoux (squat complet)'));
       else issues.push(ok('Profondeur complète ✓'));
