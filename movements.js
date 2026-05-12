@@ -57,8 +57,8 @@ const SQUAT = {
   angleLabel: 'Angle genou',
   downAngle: 110,
   upAngle:   160,
-  // Landmarks qui doivent être visibles pour valider les reps
-  requiredLandmarks: [0, 11, 12, 23, 24, 25, 26, 27, 28, 31, 32],
+  // Landmarks essentiels pour valider les reps (épaules, hanches, genoux, chevilles)
+  requiredLandmarks: [11, 12, 23, 24, 25, 26, 27, 28],
 
   analyse(lm, phase) {
     const side = pickSide(lm, [23,25,27], [24,26,28]);
@@ -376,15 +376,14 @@ function isFullBodyVisible(lm, movement) {
   const required = movement.requiredLandmarks;
   if (!required || !required.length) return true;
 
-  const MIN_VIS  = 0.55;  // MediaPipe visibility threshold
-  const MARGIN   = 0.02;  // allow a tiny bit outside normalized bounds
+  const MIN_VIS = 0.4;
 
   for (const idx of required) {
     const p = lm[idx];
     if (!p) return false;
     if ((p.visibility || 0) < MIN_VIS) return false;
-    if (p.x < -MARGIN || p.x > 1 + MARGIN) return false;
-    if (p.y < -MARGIN || p.y > 1 + MARGIN) return false;
+    // Landmark hors cadre (avec marge généreuse)
+    if (p.x < -0.1 || p.x > 1.1 || p.y < -0.1 || p.y > 1.1) return false;
   }
   return true;
 }
