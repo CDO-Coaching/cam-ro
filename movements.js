@@ -376,14 +376,12 @@ function isFullBodyVisible(lm, movement) {
   const required = movement.requiredLandmarks;
   if (!required || !required.length) return true;
 
-  const MIN_VIS = 0.4;
-
+  // On vérifie uniquement que les points sont dans le cadre (pas le score de visibilité
+  // qui est peu fiable depuis un angle de profil avec MediaPipe)
   for (const idx of required) {
     const p = lm[idx];
     if (!p) return false;
-    if ((p.visibility || 0) < MIN_VIS) return false;
-    // Landmark hors cadre (avec marge généreuse)
-    if (p.x < -0.1 || p.x > 1.1 || p.y < -0.1 || p.y > 1.1) return false;
+    if (p.x < -0.15 || p.x > 1.15 || p.y < -0.15 || p.y > 1.15) return false;
   }
   return true;
 }
