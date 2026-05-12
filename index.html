@@ -4,72 +4,152 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
   <title>Posture Analyser</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="app">
-    <!-- Header -->
-    <header>
-      <h1>Posture Analyser</h1>
-      <div id="movement-selector">
-        <button class="mv-btn active" data-movement="squat">Squat</button>
-        <button class="mv-btn" data-movement="pushup">Pompe</button>
+
+<!-- ═══════════════════════════════════════════════════════════
+     VIEW 1 — Selection
+═══════════════════════════════════════════════════════════ -->
+<div id="view-select" class="view active">
+  <header class="app-header">
+    <h1>Posture Analyser</h1>
+    <p class="subtitle">Choisissez un mouvement à analyser</p>
+  </header>
+
+  <div id="movement-grid">
+
+    <button class="mv-card" data-id="squat">
+      <span class="mv-icon">🦵</span>
+      <div class="mv-info">
+        <strong>Squat</strong>
+        <span>Angles genou, hanche, torse · Profondeur · Axe genou</span>
       </div>
-    </header>
+      <span class="mv-arrow">›</span>
+    </button>
 
-    <!-- Camera / canvas -->
-    <div id="video-wrapper">
-      <video id="video" playsinline autoplay muted></video>
-      <canvas id="canvas"></canvas>
-
-      <!-- Overlays -->
-      <div id="feedback-overlay">
-        <div id="feedback-badge"></div>
+    <button class="mv-card" data-id="pushup">
+      <span class="mv-icon">💪</span>
+      <div class="mv-info">
+        <strong>Pompe</strong>
+        <span>Angle coude · Gainage · Alignement corps</span>
       </div>
+      <span class="mv-arrow">›</span>
+    </button>
 
-      <div id="camera-hint">Placez-vous de <strong>profil</strong> à ~2 m de la caméra</div>
+    <button class="mv-card" data-id="deadlift">
+      <span class="mv-icon">🏋️</span>
+      <div class="mv-info">
+        <strong>Soulevé de terre</strong>
+        <span>Dos plat · Inclinaison · Verrouillage final</span>
+      </div>
+      <span class="mv-arrow">›</span>
+    </button>
+
+    <button class="mv-card" data-id="lunge">
+      <span class="mv-icon">🚶</span>
+      <div class="mv-info">
+        <strong>Fente avant</strong>
+        <span>Genou avant · Torse droit · Profondeur</span>
+      </div>
+      <span class="mv-arrow">›</span>
+    </button>
+
+    <button class="mv-card" data-id="plank">
+      <span class="mv-icon">📐</span>
+      <div class="mv-info">
+        <strong>Planche (gainage)</strong>
+        <span>Alignement · Hanches · Durée</span>
+      </div>
+      <span class="mv-arrow">›</span>
+    </button>
+
+    <button class="mv-card" data-id="ohsquat">
+      <span class="mv-icon">🙌</span>
+      <div class="mv-info">
+        <strong>Squat bulgare</strong>
+        <span>Équilibre · Genou avant · Amplitude</span>
+      </div>
+      <span class="mv-arrow">›</span>
+    </button>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     VIEW 2 — Analyser
+═══════════════════════════════════════════════════════════ -->
+<div id="view-analyse" class="view">
+
+  <header class="analyse-header">
+    <button id="back-btn">‹ Retour</button>
+    <div id="mv-title-bar">
+      <span id="mv-icon-header"></span>
+      <span id="mv-name-header"></span>
     </div>
+    <div></div>
+  </header>
 
-    <!-- Stats bar -->
-    <div id="stats">
-      <div class="stat-box">
-        <span class="stat-value" id="rep-count">0</span>
-        <span class="stat-label">Reps</span>
-      </div>
-      <div class="stat-box">
-        <span class="stat-value" id="knee-angle">—</span>
-        <span class="stat-label">Angle genou</span>
-      </div>
-      <div class="stat-box">
-        <span class="stat-value" id="phase-label">—</span>
-        <span class="stat-label">Phase</span>
-      </div>
-      <div class="stat-box">
-        <span class="stat-value" id="rep-speed">—</span>
-        <span class="stat-label">Vitesse</span>
-      </div>
+  <!-- Camera -->
+  <div id="video-wrapper">
+    <video id="video" playsinline autoplay muted></video>
+    <canvas id="canvas"></canvas>
+    <div id="feedback-badge"></div>
+    <div id="pose-hint">Placez-vous de <strong>profil</strong> à ~2 m</div>
+  </div>
+
+  <!-- Stats bar -->
+  <div id="stats-bar">
+    <div class="stat">
+      <span class="sv" id="stat-reps">0</span>
+      <span class="sl">Reps</span>
     </div>
-
-    <!-- Issues list -->
-    <div id="issues-panel">
-      <h3>Corrections</h3>
-      <ul id="issues-list"><li class="placeholder">Démarrez pour voir les corrections.</li></ul>
+    <div class="stat">
+      <span class="sv" id="stat-angle">—</span>
+      <span class="sl" id="stat-angle-label">Angle</span>
     </div>
-
-    <!-- Controls -->
-    <div id="controls">
-      <button id="start-btn">Démarrer la caméra</button>
-      <button id="reset-btn" disabled>Réinitialiser</button>
+    <div class="stat">
+      <span class="sv" id="stat-phase">—</span>
+      <span class="sl">Phase</span>
+    </div>
+    <div class="stat">
+      <span class="sv" id="stat-speed">—</span>
+      <span class="sl">Vitesse</span>
     </div>
   </div>
 
-  <!-- MediaPipe CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+  <!-- Score bar -->
+  <div id="score-bar">
+    <span id="score-label">Qualité de forme</span>
+    <div id="score-track">
+      <div id="score-fill"></div>
+    </div>
+    <span id="score-value">—</span>
+  </div>
 
-  <script src="app.js"></script>
+  <!-- Corrections -->
+  <div id="corrections-panel">
+    <div class="panel-title">Corrections en temps réel</div>
+    <ul id="corrections-list">
+      <li class="c-muted">Démarrez la caméra pour commencer l'analyse.</li>
+    </ul>
+  </div>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button id="start-btn">▶ Démarrer</button>
+    <button id="reset-btn" disabled>↺ Reset</button>
+  </div>
+
+</div>
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+
+<script src="movements.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
