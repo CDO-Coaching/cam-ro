@@ -72,11 +72,11 @@ const pose = new Pose({
   locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`,
 });
 pose.setOptions({
-  modelComplexity: 1,
+  modelComplexity: 2,        // modèle lourd — meilleure précision de profil
   smoothLandmarks: true,
   enableSegmentation: false,
-  minDetectionConfidence: 0.6,
-  minTrackingConfidence: 0.6,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5,
 });
 pose.onResults(onResults);
 

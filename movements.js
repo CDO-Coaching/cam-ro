@@ -57,8 +57,7 @@ const SQUAT = {
   angleLabel: 'Angle genou',
   downAngle: 110,
   upAngle:   160,
-  // Landmarks essentiels pour valider les reps (épaules, hanches, genoux, chevilles)
-  requiredLandmarks: [11, 12, 23, 24, 25, 26, 27, 28],
+  sideView: true,  // vérifie uniquement le côté face caméra
 
   analyse(lm, phase) {
     const side = pickSide(lm, [23,25,27], [24,26,28]);
@@ -110,6 +109,7 @@ const PUSHUP = {
   angleLabel: 'Angle coude',
   downAngle: 95,
   upAngle:   155,
+  sideView: true,
 
   analyse(lm, phase) {
     const side = pickSide(lm, [11,13,15], [12,14,16]);
@@ -164,8 +164,9 @@ const DEADLIFT = {
   icon: '🏋️',
   hint: 'Placez-vous de profil à ~2 m',
   angleLabel: 'Angle hanche',
-  downAngle: 80,   // hip angle (torso bent forward)
-  upAngle:   155,  // fully standing
+  downAngle: 80,
+  upAngle:   155,
+  sideView: true,
 
   analyse(lm, phase) {
     const side = pickSide(lm, [23,25,27], [24,26,28]);
@@ -220,6 +221,7 @@ const LUNGE = {
   angleLabel: 'Angle genou',
   downAngle: 100,
   upAngle:   155,
+  sideView: true,
 
   analyse(lm, phase) {
     // Use front knee (the more bent one in bottom position)
@@ -327,6 +329,7 @@ const OHSQUAT = {
   angleLabel: 'Angle genou',
   downAngle: 100,
   upAngle:   155,
+  sideView: true,
 
   analyse(lm, phase) {
     const lKnee = lm[25]; const rKnee = lm[26];
@@ -373,17 +376,29 @@ const OHSQUAT = {
 // Returns true only if all required landmarks are visible and inside the frame.
 
 function isFullBodyVisible(lm, movement) {
+  // Pour les mouvements de profil : on détecte le côté qui fait face à la caméra
+  // et on ne vérifie que ses 4 landmarks (épaule, hanche, genou, cheville).
+  // Le score de visibilité MediaPipe est peu fiable de profil (modèle entraîné face caméra).
+  if (movement.sideView) {
+    const LEFT  = [11, 23, 25, 27];
+    const RIGHT = [12, 24, 26, 28];
+    const leftVis  = LEFT.reduce((s, i)  => s + (lm[i]?.visibility  || 0), 0);
+    const rightVis = RIGHT.reduce((s, i) => s + (lm[i]?.visibility  || 0), 0);
+    const side = leftVis >= rightVis ? LEFT : RIGHT;
+
+    return side.every(idx => {
+      const p = lm[idx];
+      return p && p.x > -0.15 && p.x < 1.15 && p.y > -0.15 && p.y < 1.15;
+    });
+  }
+
+  // Mouvement face caméra : vérifier tous les landmarks requis
   const required = movement.requiredLandmarks;
   if (!required || !required.length) return true;
-
-  // On vérifie uniquement que les points sont dans le cadre (pas le score de visibilité
-  // qui est peu fiable depuis un angle de profil avec MediaPipe)
-  for (const idx of required) {
+  return required.every(idx => {
     const p = lm[idx];
-    if (!p) return false;
-    if (p.x < -0.15 || p.x > 1.15 || p.y < -0.15 || p.y > 1.15) return false;
-  }
-  return true;
+    return p && p.x > -0.15 && p.x < 1.15 && p.y > -0.15 && p.y < 1.15;
+  });
 }
 
 // ─── Registry ────────────────────────────────────────────────────────────────
