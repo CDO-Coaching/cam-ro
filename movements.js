@@ -55,9 +55,10 @@ const SQUAT = {
   icon: '🦵',
   hint: 'Placez-vous de profil à ~2 m',
   angleLabel: 'Angle genou',
-  // Phase thresholds
-  downAngle: 110,   // knee angle below = "bottom"
-  upAngle:   160,   // knee angle above = "top"
+  downAngle: 110,
+  upAngle:   160,
+  // Landmarks qui doivent être visibles pour valider les reps
+  requiredLandmarks: [0, 11, 12, 23, 24, 25, 26, 27, 28, 31, 32],
 
   analyse(lm, phase) {
     const side = pickSide(lm, [23,25,27], [24,26,28]);
@@ -83,9 +84,10 @@ const SQUAT = {
       if (kneeForward) issues.push(err('Genou dépasse les orteils — reculez les fesses, poussez les genoux vers l\'extérieur'));
       else issues.push(ok('Genou dans l\'axe des orteils ✓'));
 
-      // Depth: hip crease below knee
-      if (hip.y < knee.y) issues.push(warn('Profondeur insuffisante — descendez jusqu\'à ce que la hanche passe sous le genou'));
-      else issues.push(ok('Profondeur correcte ✓'));
+      // Depth: hip crease must be clearly below knee (margin = 0.06 normalized units)
+      const DEPTH_MARGIN = 0.06;
+      if (hip.y < knee.y + DEPTH_MARGIN) issues.push(warn('Pas assez profond — hanches bien sous les genoux (squat complet)'));
+      else issues.push(ok('Profondeur complète ✓'));
 
       // Knee valgus: rough check via knee vs ankle x-alignment on front view
       // (limited without front camera — noted as tip)
@@ -366,6 +368,26 @@ const OHSQUAT = {
     return { primaryAngle: frontKneeAng, issues };
   }
 };
+
+// ─── Full-body visibility check ──────────────────────────────────────────────
+// Returns true only if all required landmarks are visible and inside the frame.
+
+function isFullBodyVisible(lm, movement) {
+  const required = movement.requiredLandmarks;
+  if (!required || !required.length) return true;
+
+  const MIN_VIS  = 0.55;  // MediaPipe visibility threshold
+  const MARGIN   = 0.02;  // allow a tiny bit outside normalized bounds
+
+  for (const idx of required) {
+    const p = lm[idx];
+    if (!p) return false;
+    if ((p.visibility || 0) < MIN_VIS) return false;
+    if (p.x < -MARGIN || p.x > 1 + MARGIN) return false;
+    if (p.y < -MARGIN || p.y > 1 + MARGIN) return false;
+  }
+  return true;
+}
 
 // ─── Registry ────────────────────────────────────────────────────────────────
 

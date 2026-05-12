@@ -99,24 +99,32 @@ function onResults(results) {
 
   if (!currentMovement) return;
 
-  // Phase update
   const mv = currentMovement;
+
+  // ── Corps entier visible ? ──────────────────────────────────────────────
+  const bodyOk = isFullBodyVisible(lm, mv);
+  poseHint.style.display = bodyOk ? 'none' : 'block';
+  poseHint.innerHTML = bodyOk
+    ? mv.hint
+    : '⚠ Corps non entier visible — reculez ou recadrez';
+
   const { primaryAngle, issues } = mv.analyse(lm, st.phase);
 
+  // Ne compte les reps que si le corps est entier dans le cadre
   if (!mv.isIsometric) {
-    updatePhase(primaryAngle, mv.downAngle, mv.upAngle, issues);
+    if (bodyOk) {
+      updatePhase(primaryAngle, mv.downAngle, mv.upAngle, issues);
+    } else {
+      // Affiche quand même la phase mais sans valider
+      if (primaryAngle < mv.downAngle) statPhase.textContent = '▼ Bas (non compté)';
+    }
   }
 
   statAngle.textContent = Math.round(primaryAngle) + '°';
 
-  // Score
   const score = calcScore(issues);
   updateScore(score);
-
-  // Corrections
   renderCorrections(issues);
-
-  // Highlight joints per movement
   highlightJoints(lm, mv.id);
 }
 
